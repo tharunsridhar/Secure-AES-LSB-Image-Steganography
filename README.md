@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+# Secure-AES-LSB-Image-Steganography
+Securely embed AES-encrypted messages into grayscale images using LSB steganography. This toolkit analyzes image quality impact with PSNR and SSIM metrics across varying payloads. Supports blind extraction without original image, providing a modular, extensible framework for secure covert communication and research.
+
+>>>>>>> 2b17a29c4f60e629a500a79820b268a324a5b9fe
 # Enhanced Encryption Before LSB: Capacity vs Quality Trade-Off
 
 A toolkit for secure message embedding in grayscale images using AES encryption and Least Significant Bit (LSB) steganography. Quantifies image quality impact via PSNR and SSIM metrics. 
@@ -22,3 +28,7 @@ See `requirements.txt` for dependencies.
 ## References
 
 See `/references` and `/docs` for cited papers and documentation.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2b17a29c4f60e629a500a79820b268a324a5b9fe
