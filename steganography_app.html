@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steganography - Hide & Reveal Messages</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Landing Page Styles */
+        .landing-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .landing-header {
+            margin-bottom: 60px;
+        }
+
+        .landing-header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f, #4d79ff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .landing-header p {
+            font-size: 1.3rem;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .choice-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .choice-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 300px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .choice-card:hover::before {
+            left: 100%;
+        }
+
+        .choice-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .choice-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .choice-description {
+            color: #a0a0a0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .hide-card .choice-icon { color: #ff6b6b; }
+        .reveal-card .choice-icon { color: #4d79ff; }
+
+        /* Page Styles */
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .page-header h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .page-header p {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4d79ff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(77, 121, 255, 0.3);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #a0a0a0;
+        }
+
+        .file-input-label:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4d79ff;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-reveal {
+            background: linear-gradient(135deg, #4d79ff 0%, #7b9cff 100%);
+        }
+
+        .btn-reveal:hover {
+            box-shadow: 0 10px 30px rgba(77, 121, 255, 0.4);
+        }
+
+        .result-area {
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-text {
+            font-size: 1.1rem;
+            text-align: center;
+            word-break: break-word;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #6bcf7f 0%, #8fdf8f 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(107, 207, 127, 0.4);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .success {
+            color: #6bcf7f;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .landing-header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .choice-container {
+                gap: 20px;
+            }
+            
+            .choice-card {
+                width: 250px;
+                padding: 30px 20px;
+            }
+            
+            .form-container {
+                margin: 0 20px;
+                padding: 30px 20px;
+            }
+            
+            .back-btn {
+                top: 20px;
+                left: 20px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Particle effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- Landing Page -->
+        <div id="landing" class="landing-page">
+            <div class="landing-header">
+                <h1>🔒 Steganography</h1>
+                <p>Hide secret messages in images with military-grade encryption. Choose your action below.</p>
+            </div>
+            
+            <div class="choice-container">
+                <div class="choice-card hide-card" onclick="showPage('hide')">
+                    <span class="choice-icon">🔐</span>
+                    <h3 class="choice-title">Hide a Message</h3>
+                    <p class="choice-description">Embed encrypted secret messages into innocent-looking images</p>
+                </div>
+                
+                <div class="choice-card reveal-card" onclick="showPage('reveal')">
+                    <span class="choice-icon">🔓</span>
+                    <h3 class="choice-title">Reveal a Message</h3>
+                    <p class="choice-description">Extract and decrypt hidden messages from encoded images</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hide Message Page -->
+        <div id="hide-page" class="page">
+            <button class="back-btn" onclick="showPage('landing')">← Back</button>
+            
+            <div class="page-header">
+                <h2>🔐 Hide a Message</h2>
+                <p>Encrypt and embed your secret message into an image</p>
+            </div>
+            
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="secret-message">Secret Message</label>
+                    <textarea id="secret-message" class="form-control" placeholder="Enter your secret message here..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cover-image">Cover Image</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="cover-image" class="file-input" accept="image/*">
+                        <label for="cover-image" class="file-input-label">
+                            📁 Choose an image to hide your message
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="encryption-key">Encryption Key</label>
+                    <input type="password" id="encryption-key" class="form-control" placeholder="Enter a strong password...">
+                </div>
+                
+                <button id="hide-btn" class="btn">🔒 Hide Message in Image</button>
+                
+                <div id="hide-result" class="result-area" style="display: none;">
+                    <div id="hide-content"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reveal Message Page -->
+        <div id="reveal-page" class="page">
+            <button class="back-btn" onclick="showPage('landing')">← Back</button>
+            
+            <div class="page-header">
+                <h2>🔓 Reveal a Message</h2>
+                <p>Extract and decrypt hidden messages from encoded images</p>
+            </div>
+            
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="encoded-image">Encoded Image</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="encoded-image" class="file-input" accept="image/*">
+                        <label for="encoded-image" class="file-input-label">
+                            📂 Choose the encoded image
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="decryption-key">Decryption Key</label>
+                    <input type="password" id="decryption-key" class="form-control" placeholder="Enter the password...">
+                </div>
+                
+                <button id="reveal-btn" class="btn btn-reveal">🔓 Reveal Hidden Message</button>
+                
+                <div id="reveal-result" class="result-area" style="display: none;">
+                    <div id="reveal-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.landing-page, .page').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            
+            // Show selected page
+            if (pageId === 'landing') {
+                document.getElementById('landing').style.display = 'flex';
+            } else {
+                document.getElementById(pageId + '-page').style.display = 'block';
+                document.getElementById(pageId + '-page').classList.add('active');
+            }
+        }
+
+        // Particle Effect
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
+        // Steganography Class
+        class Steganography {
+            static hideMessage(imageData, message, key) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                
+                const data = new Uint8ClampedArray(imageData.data);
+                
+                // Encrypt the message
+                const encrypted = CryptoJS.AES.encrypt(message, key).toString();
+                const messageWithDelimiter = encrypted + '|||END|||';
+                
+                // Convert message to binary
+                let binaryMessage = '';
+                for (let i = 0; i < messageWithDelimiter.length; i++) {
+                    binaryMessage += messageWithDelimiter.charCodeAt(i).toString(2).padStart(8, '0');
+                }
+                
+                // Hide message in LSB of pixels
+                let messageIndex = 0;
+                for (let i = 0; i < data.length && messageIndex < binaryMessage.length; i += 4) {
+                    // Use red, green, blue channels (skip alpha)
+                    for (let channel = 0; channel < 3 && messageIndex < binaryMessage.length; channel++) {
+                        const bit = parseInt(binaryMessage[messageIndex]);
+                        data[i + channel] = (data[i + channel] & 0xFE) | bit;
+                        messageIndex++;
+                    }
+                }
+                
+                const newImageData = new ImageData(data, canvas.width, canvas.height);
+                ctx.putImageData(newImageData, 0, 0);
+                
+                return canvas.toDataURL('image/png');
+            }
+            
+            static revealMessage(imageData, key) {
+                const data = imageData.data;
+                let binaryMessage = '';
+                
+                // Extract LSB from pixels
+                for (let i = 0; i < data.length; i += 4) {
+                    for (let channel = 0; channel < 3; channel++) {
+                        binaryMessage += (data[i + channel] & 1).toString();
+                    }
+                }
+                
+                // Convert binary to text
+                let message = '';
+                for (let i = 0; i < binaryMessage.length; i += 8) {
+                    const byte = binaryMessage.substr(i, 8);
+                    if (byte.length === 8) {
+                        const charCode = parseInt(byte, 2);
+                        message += String.fromCharCode(charCode);
+                        
+                        // Check for delimiter
+                        if (message.endsWith('|||END|||')) {
+                            message = message.substring(0, message.length - 9);
+                            break;
+                        }
+                    }
+                }
+                
+                // Decrypt the message
+                try {
+                    const decrypted = CryptoJS.AES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                    if (!decrypted) throw new Error('Invalid key or corrupted message');
+                    return decrypted;
+                } catch (error) {
+                    throw new Error('Failed to decrypt message. Check your key.');
+                }
+            }
+        }
+
+        // Helper functions
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                };
+                
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        function showError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="error">❌ ${message}</div>`;
+            container.style.display = 'block';
+        }
+
+        function setLoading(elementId, isLoading) {
+            const element = document.getElementById(elementId);
+            if (isLoading) {
+                element.classList.add('loading');
+                element.disabled = true;
+            } else {
+                element.classList.remove('loading');
+                element.disabled = false;
+            }
+        }
+
+        // Hide message functionality
+        document.getElementById('hide-btn').addEventListener('click', async () => {
+            const message = document.getElementById('secret-message').value;
+            const imageFile = document.getElementById('cover-image').files[0];
+            const key = document.getElementById('encryption-key').value;
+            
+            if (!message || !imageFile || !key) {
+                showError('hide-result', 'Please fill in all fields');
+                return;
+            }
+            
+            setLoading('hide-btn', true);
+            
+            try {
+                const imageData = await loadImage(imageFile);
+                const encodedImage = Steganography.hideMessage(imageData, message, key);
+                
+                const resultContainer = document.getElementById('hide-result');
+                const resultContent = document.getElementById('hide-content');
+                
+                resultContent.innerHTML = `
+                    <div class="success">✅ Message successfully hidden in image!</div>
+                    <img src="${encodedImage}" alt="Encoded Image" class="result-image">
+                    <a href="${encodedImage}" download="encoded-image.png" class="download-btn">
+                        📥 Download Encoded Image
+                    </a>
+                `;
+                
+                resultContainer.style.display = 'block';
+            } catch (error) {
+                showError('hide-result', error.message);
+            } finally {
+                setLoading('hide-btn', false);
+            }
+        });
+
+        // Reveal message functionality
+        document.getElementById('reveal-btn').addEventListener('click', async () => {
+            const imageFile = document.getElementById('encoded-image').files[0];
+            const key = document.getElementById('decryption-key').value;
+            
+            if (!imageFile || !key) {
+                showError('reveal-result', 'Please provide both image and key');
+                return;
+            }
+            
+            setLoading('reveal-btn', true);
+            
+            try {
+                const imageData = await loadImage(imageFile);
+                const revealedMessage = Steganography.revealMessage(imageData, key);
+                
+                const resultContainer = document.getElementById('reveal-result');
+                const resultContent = document.getElementById('reveal-content');
+                
+                resultContent.innerHTML = `
+                    <div class="success">✅ Message successfully revealed!</div>
+                    <div class="result-text">${revealedMessage}</div>
+                `;
+                
+                resultContainer.style.display = 'block';
+            } catch (error) {
+                showError('reveal-result', error.message);
+            } finally {
+                setLoading('reveal-btn', false);
+            }
+        });
+
+        // File input visual feedback
+        function setupFileInput(inputId) {
+            const input = document.getElementById(inputId);
+            const label = document.querySelector(`label[for="${inputId}"]`);
+            const originalText = label.textContent;
+            
+            input.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    label.textContent = `📎 ${e.target.files[0].name}`;
+                    label.style.background = 'rgba(77, 121, 255, 0.2)';
+                    label.style.borderColor = '#4d79ff';
+                    label.style.color = '#fff';
+                } else {
+                    label.textContent = originalText;
+                    label.style.background = 'rgba(255, 255, 255, 0.05)';
+                    label.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    label.style.color = '#a0a0a0';
+                }
+            });
+        }
+
+        setupFileInput('cover-image');
+        setupFileInput('encoded-image');
+
+        // Initialize app
+        showPage('landing');
+    </script>
+</body>
+</html>
