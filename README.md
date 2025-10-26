@@ -29,6 +29,3 @@ See `requirements.txt` for dependencies.
 
 See `/references` and `/docs` for cited papers and documentation.
 <<<<<<< HEAD
-=======
-
->>>>>>> 2b17a29c4f60e629a500a79820b268a324a5b9fe
