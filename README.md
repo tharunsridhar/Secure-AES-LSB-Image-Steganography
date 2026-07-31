@@ -1,5 +1,10 @@
 # 🔐 Secure AES + LSB Image Steganography
 
+![Python](https://img.shields.io/badge/Python-3-3776AB?style=flat-square&logo=python&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-Image%20Processing-0C7BDC?style=flat-square&logo=opencv&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-CryptoJS-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![AES](https://img.shields.io/badge/Encryption-AES--CBC-critical?style=flat-square)
+
 A secure steganography framework that combines AES encryption with Least Significant Bit (LSB) embedding in grayscale images.
 
 This project demonstrates secure covert communication while quantitatively analyzing image distortion using PSNR and SSIM metrics.
@@ -23,17 +28,19 @@ The framework emphasizes both **cryptographic security** and **steganographic im
 
 ## 🧠 System Workflow
 
-Plaintext Message  
-        ↓  
-AES Encryption  
-        ↓  
-Base64 Encoding  
-        ↓  
-Binary Conversion  
-        ↓  
-LSB Embedding into Image  
-        ↓  
-Stego Image Output  
+```text
+Plaintext Message
+  ->
+AES Encryption
+  ->
+Base64 Encoding
+  ->
+Binary Conversion
+  ->
+LSB Embedding into Image
+  ->
+Stego Image Output
+```
 
 Extraction reverses the entire pipeline.
 
@@ -43,18 +50,18 @@ Extraction reverses the entire pipeline.
 
 ### AES Implementation (Python)
 
-- AES-CBC mode (with random IV) :contentReference[oaicite:4]{index=4}  
-- PKCS-style padding  
-- Base64 encoding of IV + ciphertext  
-- Secure random key generation  
+- AES-CBC mode with a random IV
+- PKCS-style padding
+- Base64 encoding of IV + ciphertext
+- Secure random key generation
 
-Alternative version includes AES-ECB for experimentation :contentReference[oaicite:5]{index=5}  
+An alternative version (`main2.py`) uses AES-ECB for experimentation and comparison.
 
 ### Browser Version
 
-- AES encryption using CryptoJS :contentReference[oaicite:6]{index=6}  
-- Client-side encryption & decryption  
-- No server dependency  
+- AES encryption using CryptoJS
+- Client-side encryption & decryption
+- No server dependency
 
 ---
 
@@ -65,8 +72,7 @@ Alternative version includes AES-ECB for experimentation :contentReference[oaici
 - Sequential bit embedding
 - Blind extraction using ciphertext length
 
-Core embedding logic implemented in Python :contentReference[oaicite:7]{index=7}  
-Equivalent JavaScript implementation for web version :contentReference[oaicite:8]{index=8}  
+Core embedding logic is implemented in Python (`main.py`), with an equivalent JavaScript implementation for the web version (`steganography_app.html`).
 
 ---
 
@@ -76,10 +82,9 @@ To measure imperceptibility, the following metrics are computed:
 
 ### PSNR (Peak Signal-to-Noise Ratio)
 
-Higher values indicate minimal distortion.  
-Observed result:
+Higher values indicate minimal distortion.
 
-- **PSNR ≈ 74 dB** :contentReference[oaicite:9]{index=9}  
+- **PSNR ≈ 74 dB**
 
 This indicates extremely low visible distortion.
 
@@ -87,7 +92,7 @@ This indicates extremely low visible distortion.
 
 Measures structural similarity between images.
 
-- **SSIM ≈ 1.000** :contentReference[oaicite:10]{index=10}  
+- **SSIM ≈ 1.000**
 
 Indicates nearly identical perceptual quality.
 
@@ -100,10 +105,7 @@ The project includes automated evaluation of:
 - Message length vs PSNR
 - Message length vs SSIM
 
-Plot generated programmatically :contentReference[oaicite:11]{index=11}  
-Example visualization shown in report :contentReference[oaicite:12]{index=12}  
-
-This demonstrates how increasing payload affects image fidelity.
+The trade-off plot is generated programmatically and saved as `quality_tradeoff.png`, with an example shown in `main-output.pdf`. This demonstrates how increasing payload affects image fidelity.
 
 ---
 
@@ -117,11 +119,7 @@ The report demonstrates:
 - High PSNR and SSIM values
 - Trade-off plot saved as `quality_tradeoff.png`
 
-Full experimental screenshots available in:
-```
-main-output.pdf
-```
-:contentReference[oaicite:13]{index=13}  
+Full experimental screenshots are available in `main-output.pdf`.
 
 ---
 
@@ -146,12 +144,12 @@ main-output.pdf
 
 ## 📂 Project Structure
 
-```
-main.py                  → Full CLI workflow (AES-CBC + Metrics)
-main2.py                 → Alternative experimental pipeline
-main-output.pdf          → Experimental results & plots
-steganography_app.html   → Interactive browser UI
-requirements.txt         → Dependencies
+```text
+main.py                  -> Full CLI workflow (AES-CBC + Metrics)
+main2.py                 -> Alternative experimental pipeline (AES-ECB)
+main-output.pdf          -> Experimental results & plots
+steganography_app.html   -> Interactive browser UI
+requirements.txt         -> Dependencies
 ```
 
 ---
@@ -170,7 +168,7 @@ Run:
 python main.py
 ```
 
-Follow prompts to:
+Follow the prompts to:
 - Enter message
 - Select encryption type
 - Provide cover image path
@@ -182,13 +180,7 @@ Follow prompts to:
 
 ## 🌐 How to Run (Web Version)
 
-Simply open:
-
-```
-steganography_app.html
-```
-
-in a browser.
+Open `steganography_app.html` directly in a browser.
 
 Features:
 - Hide message
@@ -235,14 +227,10 @@ This project demonstrates:
 
 ## 📘 Report
 
-Complete experimental workflow and visual results available in:
-
-```
-main-output.pdf
-```
+The complete experimental workflow and visual results are available in `main-output.pdf`.
 
 ---
 
 ## 👤 Author
 
-Tharun Sridhar  
+Tharun Sridhar
